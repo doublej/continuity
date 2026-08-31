@@ -5,11 +5,15 @@ struct ContinuityApp: App {
     @State private var runner = Runner()
 
     init() {
-        NSApplication.shared.setActivationPolicy(.accessory)
+        Feedback.requestNotifications()
+        Updater.start()
     }
 
     var body: some Scene {
-        MenuBarExtra("Continuity", systemImage: runner.phones.isEmpty ? "iphone.slash" : "iphone.badge.play") {
+        MenuBarExtra(
+            "Continuity",
+            systemImage: runner.phones.isEmpty ? "iphone.slash" : "iphone.badge.play"
+        ) {
             status
             Divider()
             ForEach(Action.all) { action in
@@ -17,7 +21,10 @@ struct ContinuityApp: App {
             }
             Divider()
             history
-            Button("Open log") { NSWorkspace.shared.open(Feedback.logURL) }
+            Button("Open log") { openLog() }
+            if Updater.isConfigured {
+                Button("Check for Updates…") { Updater.checkForUpdates() }
+            }
             Button("Quit") { NSApp.terminate(nil) }
         }
     }
@@ -42,5 +49,15 @@ struct ContinuityApp: App {
                 }
             }
         }
+    }
+
+    /// Console.app specifically: it tails the file and colours it, where the default
+    /// handler for a .log is whatever text editor happens to claim the extension.
+    private func openLog() {
+        let console = URL(fileURLWithPath: "/System/Applications/Utilities/Console.app")
+        NSWorkspace.shared.open(
+            [Feedback.logURL],
+            withApplicationAt: console,
+            configuration: NSWorkspace.OpenConfiguration())
     }
 }

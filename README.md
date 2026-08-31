@@ -7,6 +7,13 @@ When your iPhone stops showing up as a camera or mic, the fix is almost always r
 one of the launchd agents behind it. This is a tray icon that does that, so you don't have
 to open a terminal mid-call.
 
+## Install
+
+Download the zip from [Releases](https://github.com/doublej/continuity/releases), unzip,
+and drag `continuity.app` to `/Applications`. It is signed and notarized, so it opens
+without a Gatekeeper detour, and it updates itself from then on (Sparkle, daily check —
+`Check for Updates…` in the menu forces one).
+
 ## Status
 
 The top of the menu shows the paired phone as macOS sees it, and the menu bar icon flips
@@ -37,26 +44,39 @@ the model ID (`iPhone…`, `iPad…`) is what actually identifies it.
 | Bounce Bluetooth… | `killall bluetoothd` — Continuity needs BT up | yes |
 | Bounce Wi-Fi | power cycles the Wi-Fi port | |
 
-Every target is a launchd on-demand job, so killing it is a restart. The two root items use
-the standard macOS authorisation prompt.
+Every target is a launchd on-demand job, so killing it is a restart. The three root items
+ask for an administrator password through the standard macOS prompt.
 
 ## Feedback
 
 Each command reports three ways, so you see the result whether or not the menu is open:
 
-- **Notification** — title/subtitle/result, posted through `osascript`, because an unbundled
-  SwiftPM binary has no bundle identifier and `UNUserNotificationCenter` needs one.
+- **Notification** — title, command, result.
 - **Menu history** — a `Recent` section with the last 8 results and their timestamps.
-- **Log** — `~/Library/Logs/continuity.log`, opened with the `Open log` menu item.
+- **Log** — `~/Library/Logs/continuity.log`; `Open log` opens it in Console.
 
-## Run
+## Build
 
 ```bash
-just run          # swift run Continuity
+just install      # xcodegen + swiftlint check
+just run          # signed debug build, launched
 just check        # fmt + loc + dir + lint + build + test
 ```
 
-The app is an accessory app — menu bar only, no dock icon, no window.
+Needs XcodeGen and SwiftLint (`brew install xcodegen swiftlint`) and the Developer ID
+certificate in the login keychain — signing is manual and never falls back to ad-hoc.
+
+## Release
+
+```bash
+just next            # what the next version would be
+just bump [part]     # gate, then version commit + annotated tag
+just publish         # notarize, GitHub release, then rewrite and push the appcast
+```
+
+The version lives only in `project.yml`. `appcast.xml` at the repo root is the Sparkle
+feed, served raw from `main` — it is the last thing `just publish` pushes, so it never
+names a download that is not on the release yet.
 
 ## Layout
 
@@ -65,8 +85,11 @@ continuity/
   App.swift       # @main + MenuBarExtra menu
   Runner.swift    # runs an action, reports the result three ways
   Actions.swift   # the command list
-  Status.swift    # which phone macOS currently exposes
-  Shell.swift     # process runner (+ admin via NSAppleScript)
-  Feedback.swift  # log file + notification
-Tests/ContinuityTests/ShellTests.swift
+  System/
+    Shell.swift     # subprocess runner, plain and as root
+    Status.swift    # which phone macOS currently exposes
+    Feedback.swift  # log file + notification
+    Updater.swift   # Sparkle
+Tests/ContinuityTests/
+project.yml       # XcodeGen input: targets, signing, version
 ```

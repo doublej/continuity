@@ -12,3 +12,6 @@ DerivedData/
 
 .claude/claude-tree.*
 **/CLAUDE.md.history.jsonl
+
+release/
+*.xcodeproj

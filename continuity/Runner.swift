@@ -29,10 +29,12 @@ final class Runner {
     }
 
     func run(_ action: Action) {
-        guard !action.admin else {
-            return report(action, Shell.runAsAdmin(action.command))
+        Task {
+            let output = action.admin
+                ? await Shell.runAsAdmin(action.command)
+                : await Shell.run(action.command)
+            report(action, output)
         }
-        Task { report(action, await Shell.run(action.command)) }
     }
 
     private func report(_ action: Action, _ output: String) {
@@ -40,8 +42,8 @@ final class Runner {
         let entry = Entry(time: Date(), title: action.title, detail: text.isEmpty ? "done" : text)
         history = Array((history + [entry]).suffix(8))
         Feedback.log(entry.detail.split(separator: "\n").joined(separator: " · "), for: action.title)
+        Feedback.notify(subtitle: action.title, body: entry.detail)
         Task {
-            await Feedback.notify(subtitle: action.title, body: entry.detail)
             // Killed agents are relaunched on demand — give launchd a moment before re-reading.
             try? await Task.sleep(for: .seconds(2))
             refresh()

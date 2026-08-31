@@ -1,0 +1,79 @@
+name: Continuity
+
+options:
+  bundleIdPrefix: dev.jurrejan
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.9.5
+
+targets:
+  Continuity:
+    type: application
+    platform: macOS
+    sources:
+      # Info.plist is a build input, not a resource — without the exclude it also
+      # gets copied into Resources/, where a stray Info.plist confuses codesign.
+      - path: continuity
+        excludes:
+          - "Resources/Info.plist"
+    dependencies:
+      - package: Sparkle
+        product: Sparkle
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.jurrejan.continuity
+        PRODUCT_NAME: continuity
+        PRODUCT_MODULE_NAME: Continuity
+        INFOPLIST_FILE: continuity/Resources/Info.plist
+        MARKETING_VERSION: "0.0.0"
+        CURRENT_PROJECT_VERSION: "0"
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_APP_SANDBOX: NO
+        # Manual signing against "Developer ID Application: Jurre-Jan Smit". The
+        # hash is hardcoded on purpose: any name-based lookup that falls back to
+        # ad-hoc signing would change the designated requirement on every build,
+        # which resets TCC grants — here, the notification permission. Debug and
+        # Release share it, so the build you test is signed like the build you ship.
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: 72B6E55BE646D0664EF83C986B55B8F6D58BC2B6
+        DEVELOPMENT_TEAM: KA6433FU8U
+        PROVISIONING_PROFILE_SPECIFIER: ""
+        CODE_SIGNING_REQUIRED: YES
+        CODE_SIGNING_ALLOWED: YES
+      configs:
+        # The test bundle does `@testable import Continuity`, which needs the app to
+        # emit a testable swiftmodule. Debug only — a shipped build exports nothing.
+        Debug:
+          SWIFT_ENABLE_TESTABILITY: YES
+    scheme:
+      testTargets:
+        - ContinuityTests
+
+  ContinuityTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+    dependencies:
+      # Loaded into the app as its test host; linking would duplicate the symbols.
+      - target: Continuity
+        embed: false
+        link: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.jurrejan.continuity.tests
+        SWIFT_VERSION: "6.0"
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/continuity.app/Contents/MacOS/continuity"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: 72B6E55BE646D0664EF83C986B55B8F6D58BC2B6
+        DEVELOPMENT_TEAM: KA6433FU8U

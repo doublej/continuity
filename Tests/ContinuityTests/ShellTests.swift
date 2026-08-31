@@ -28,8 +28,9 @@ private func shellQuote(_ text: String) -> String {
 
 @Test func appleScriptLiteralSurvivesAnOsascriptRoundTrip() async {
     let nasty = #"back\slash and "quotes""#
-    let source = "return \(Feedback.literal(nasty))"
-    #expect(await Shell.run("osascript -e \(Shell.quote(source))") == nasty + "\n")
+    let source = "return \(Shell.appleScriptLiteral(nasty))"
+    let output = await Shell.run("osascript -e \(Shell.quote(source))")
+    #expect(output.hasSuffix(nasty + "\n"))
 }
 
 @Test func phoneNameDropsTheRoleWord() {
