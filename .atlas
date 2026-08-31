@@ -1,0 +1,11 @@
+{
+  "description": "Menu bar commands to kick Continuity Camera and Mic back to life",
+  "type": "swift",
+  "framework": "swiftui",
+  "archived": false,
+  "flow": {
+    "policy": "gitflow",
+    "trunk": "main",
+    "integration": "develop"
+  }
+}

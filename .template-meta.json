@@ -1,0 +1,21 @@
+{
+  "template": "swift/macos",
+  "template_version": "3.3.0",
+  "template_source": {
+    "type": "local",
+    "path": "/Users/jurrejan/Documents/development/_management/cookiecutter-templates",
+    "git_remote": "git@github.com:doublej/cookiecutter-templates.git",
+    "git_sha": "0d6ca7e2093b290d36dedfec197aed317484ddf9"
+  },
+  "rendered_at": "2026-08-31T18:55:54.979441+00:00",
+  "context": {
+    "project_name": "continuity",
+    "project_slug": "continuity",
+    "module_name": "Continuity",
+    "description": "Menu bar commands to kick Continuity Camera and Mic back to life",
+    "author": "Jurre Jan",
+    "deployment_target": "26.0",
+    "mcp_servers": "none",
+    "mcp_scope": "project"
+  }
+}
