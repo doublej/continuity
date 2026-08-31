@@ -22,8 +22,7 @@ extension Action {
         ),
         Action(title: "Restart audio stack…", command: "killall coreaudiod", admin: true),
         Action(title: "Bounce Bluetooth…", command: "killall bluetoothd", admin: true),
-        Action(title: "Bounce Wi-Fi", command: wifiBounce),
-        Action(title: "List cameras", command: listCameras)
+        Action(title: "Bounce Wi-Fi", command: wifiBounce)
     ]
 
     private static let wifiBounce = """
@@ -32,7 +31,4 @@ extension Action {
         sleep 2
         networksetup -setairportpower "$dev" on
         """
-
-    private static let listCameras =
-        "system_profiler SPCameraDataType | awk '/^    [^ ]/{sub(/:$/,\"\"); sub(/^ +/,\"\"); print}'"
 }

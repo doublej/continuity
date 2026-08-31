@@ -32,3 +32,10 @@ enum Shell {
         return result?.stringValue ?? ""
     }
 }
+
+extension Shell {
+    /// Single-quote a string so `zsh -c` treats it as one literal argument.
+    static func quote(_ text: String) -> String {
+        "'" + text.replacingOccurrences(of: "'", with: "'\\''") + "'"
+    }
+}

@@ -31,6 +31,8 @@ The runtime path is `App entry (`@main struct ... : App`) → root `Scene` → `
 ## Common change patterns
 
 - **Add a Continuity command** → one `Action` in `continuity/Actions.swift`. Nothing else changes; the menu and the test both iterate `Action.all`.
+- **Report something to the user** → `Feedback` (log file + notification) via `Runner.report`, never `print`. `UNUserNotificationCenter` is unavailable: no bundle identifier.
+- **Read device state** → `Status.phones()`. Continuity devices are `.external`, not `.continuityCamera`; match on `modelID`.
 - **Add a view** → new `struct ...: View` in a dedicated file.
 - **Add a model** → `struct` (value-typed) or `@Observable` class for state that survives across views.
 - **Add a service** → class with `async` methods, injected via environment or initializer.

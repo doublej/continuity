@@ -9,32 +9,38 @@ struct ContinuityApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("Continuity", systemImage: "iphone.badge.play") {
+        MenuBarExtra("Continuity", systemImage: runner.phones.isEmpty ? "iphone.slash" : "iphone.badge.play") {
+            status
+            Divider()
             ForEach(Action.all) { action in
                 Button(action.title) { runner.run(action) }
             }
             Divider()
-            Text(runner.status)
-            Divider()
+            history
+            Button("Open log") { NSWorkspace.shared.open(Feedback.logURL) }
             Button("Quit") { NSApp.terminate(nil) }
         }
     }
-}
 
-@MainActor @Observable
-final class Runner {
-    private(set) var status = "Ready"
-
-    func run(_ action: Action) {
-        status = "Running \(action.title)…"
-        guard !action.admin else {
-            return report(action, Shell.runAsAdmin(action.command))
+    @ViewBuilder private var status: some View {
+        if runner.phones.isEmpty {
+            Text("No iPhone detected")
+        } else {
+            ForEach(runner.phones) { phone in
+                Text("\(phone.name) — \(phone.model)")
+                Text(phone.summary)
+            }
         }
-        Task { report(action, await Shell.run(action.command)) }
+        Button("Refresh") { runner.refresh() }
     }
 
-    private func report(_ action: Action, _ output: String) {
-        let text = output.trimmingCharacters(in: .whitespacesAndNewlines)
-        status = text.isEmpty ? "✓ \(action.title)" : text
+    @ViewBuilder private var history: some View {
+        if !runner.history.isEmpty {
+            Section("Recent") {
+                ForEach(runner.history.reversed()) { entry in
+                    Text(entry.line)
+                }
+            }
+        }
     }
 }
