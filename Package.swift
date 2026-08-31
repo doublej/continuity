@@ -10,6 +10,11 @@ let package = Package(
         .executableTarget(
             name: "Continuity",
             path: "continuity"
+        ),
+        .testTarget(
+            name: "ContinuityTests",
+            dependencies: ["Continuity"],
+            path: "Tests/ContinuityTests"
         )
     ]
 )
